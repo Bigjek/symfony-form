@@ -1,0 +1,76 @@
+{% extends '::admin.html.twig' %}
+{% block page_title %}
+    Отклики
+{% endblock %}
+{% block page_subtitle %}
+{% endblock %}
+{% block page_content -%}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="entity-list" id="accordion" role="tablist" aria-multiselectable="false">
+                {% for entity in entities %}
+                    {% include '@Vacanci/Admin/Vacanci/item.html.twig' with {'client':entity} %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block javascripts_inline %}
+    <script>
+        $.AdminLTE.boxWidget.collapse = function(element) {
+            console.log('test');
+            var box = element.parents(".box").first();
+            var bf = box.children(".box-body, .box-footer");
+            if (!box.hasClass("collapsed-box")) {
+                element.children(".fa-minus").removeClass("fa-minus").addClass("fa-plus");
+                bf.slideUp(300, function() {
+                    box.addClass("collapsed-box")
+                })
+            } else {
+                element.children(".fa-plus").removeClass("fa-plus").addClass("fa-minus");
+                bf.slideDown(300, function() {
+                    box.removeClass("collapsed-box")
+                })
+            }
+        };
+        $(document).on('click', '.entity-action', function(){
+            var url = $(this).data('path');
+            var context = $(this).data('target');
+
+            $.ajax({
+                url: url,
+                context: $(context)
+            }).done(function(html) {
+                console.log($(this));
+                $(this).find(".modal-content").html(html);
+                $(this).modal('show');
+            });
+
+
+        });
+        function refresh() {
+            var active = [];
+            $('#accordion .active').each(function(){
+                active.push($(this).siblings('.panel-collapse').attr('id'));
+            });
+            $.ajax({
+                url: "{{ path('product_index')}}",
+                context: $('#accordion')
+            }).done(function(html) {
+                $( this ).html(html);
+                $('#form').html('');
+                active.forEach(function(item){
+                    $('#'+item).collapse('toggle');
+                });
+            });
+        }
+    </script>
+{% endblock %}
